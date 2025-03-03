@@ -27,6 +27,7 @@ use hal::prelude::*;
 use heapless::String;
 use miniconf::{Leaf, StrLeaf};
 use rand_core::RngCore;
+use strum::IntoEnumIterator;
 use usb_device::prelude::*;
 
 /// Macro for genering an RfChannelPins structure.
@@ -308,7 +309,7 @@ pub fn setup(
     // Load initial runtime setings from RF channel EEPROM. We'll potentially overwrite these with
     // data loaded from flash later.
     let mut runtime_settings = crate::settings::runtime_settings::RuntimeSettings::default();
-    for idx in enum_iterator::all::<Channel>() {
+    for idx in Channel::iter() {
         runtime_settings.channel[idx as usize] = channels
             .channel_mut(idx)
             .map(|(channel, _)| *channel.context().settings())

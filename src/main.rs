@@ -19,6 +19,7 @@ mod watchdog;
 use fugit::ExtU32;
 use logger::BufferedLog;
 use rtic_monotonics::Monotonic;
+use strum::IntoEnumIterator;
 
 use hardware::{
     setup::MainBus,
@@ -115,7 +116,7 @@ mod app {
             // Check all of the channels.
             let mut fans_enabled = false;
 
-            for idx in enum_iterator::all::<Channel>() {
+            for idx in Channel::iter() {
                 let status = c.shared.main_bus.lock(|main_bus| {
                     main_bus
                         .channels
@@ -157,7 +158,7 @@ mod app {
         loop {
             // Gather telemetry for all of the channels.
             // And broadcast the measured data over the telemetry interface.
-            for idx in enum_iterator::all::<Channel>() {
+            for idx in Channel::iter() {
                 (&mut c.shared.main_bus, &mut c.shared.net_devices).lock(
                     |main_bus, net_devices| {
                         main_bus.channels.channel_mut(idx).map(|(ch, adc)| {
@@ -187,7 +188,7 @@ mod app {
                 .lock(|watchdog| watchdog.check_in(WatchdogClient::Button));
 
             if let Some(event) = c.local.buttons.update() {
-                for idx in enum_iterator::all::<Channel>() {
+                for idx in Channel::iter() {
                     c.shared.main_bus.lock(|main_bus| {
                         main_bus
                             .channels
@@ -212,7 +213,7 @@ mod app {
 
     #[task(priority = 1, shared=[net_devices, main_bus, settings])]
     async fn update_settings(mut c: update_settings::Context) {
-        for idx in enum_iterator::all::<Channel>() {
+        for idx in Channel::iter() {
             (&mut c.shared.main_bus, &mut c.shared.settings).lock(|main_bus, settings| {
                 main_bus
                     .channels

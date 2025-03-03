@@ -8,10 +8,10 @@ use crate::{
     hardware::platform, hardware::I2cProxy, linear_transformation::LinearTransformation, Error,
 };
 use encdec::{Decode, DecodeOwned, Encode};
-use enum_iterator::Sequence;
 use microchip_24aa02e48::Microchip24AA02E48;
 use miniconf::{Leaf, Tree};
 use serde::{Deserialize, Serialize};
+use strum::{EnumIter, IntoEnumIterator};
 
 /// The expected semver of the BoosterChannelSettings. This version must be updated whenever the
 /// `VersionedChannelData` layout is updated.
@@ -22,7 +22,7 @@ const EXPECTED_VERSION: SemVersion = SemVersion {
 };
 
 /// Indicates the desired state of a channel.
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Sequence)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, EnumIter)]
 #[repr(u8)]
 pub enum ChannelState {
     /// The channel should be turned off and power should be disconnected.
@@ -64,7 +64,7 @@ impl DecodeOwned for ChannelState {
             return Err(encdec::Error::Length);
         }
 
-        for state in enum_iterator::all::<ChannelState>() {
+        for state in ChannelState::iter() {
             if state as u8 == buff[0] {
                 return Ok((state, 1));
             }
